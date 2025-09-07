@@ -182,41 +182,14 @@ export class EmailRepository {
     }
   }
 
-  // Debu
-  async debugDataIntegrity() {
+  async getAllTemplates() {
     try {
-      const results = await Promise.all([
-        db.query('SELECT COUNT(*) as count FROM users'),
-        db.query('SELECT COUNT(*) as count FROM email_templates'),
-        db.query('SELECT COUNT(*) as count FROM email_logs'),
-        db.query('SELECT id, email FROM users ORDER BY id LIMIT 5'),
-        db.query('SELECT id, name FROM email_templates ORDER BY id LIMIT 5'),
-        db.query(`
-          SELECT el.id, el.user_id, el.template_id, el.status, 
-                 u.email as user_email, et.name as template_name
-          FROM email_logs el
-          LEFT JOIN users u ON el.user_id = u.id
-          LEFT JOIN email_templates et ON el.template_id = et.id
-          ORDER BY el.created_at DESC
-          LIMIT 5
-        `)
-      ]);
-
-      const debugInfo = {
-        userCount: results[0].rows[0].count,
-        templateCount: results[1].rows[0].count,
-        logCount: results[2].rows[0].count,
-        sampleUsers: results[3].rows,
-        sampleTemplates: results[4].rows,
-        sampleLogs: results[5].rows
-      };
-
-      logger.info(`Database integrity check`, `users=${debugInfo.userCount}, templates=${debugInfo.templateCount}, logs=${debugInfo.logCount}`);
-      return debugInfo;
-
+      const result = await db.query('SELECT id, name, subject, body FROM email_templates ORDER BY id ASC');
+      return result.rows;
     } catch (err: any) {
-      logger.error(`Database integrity check failed`, `error=${err.message || err}`);
+      logger.error(`Failed to fetch email templates`, `error=${err.message || err}`);
       throw err;
     }
   }
+
 }

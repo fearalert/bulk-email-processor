@@ -1,0 +1,19 @@
+meta {
+  name: get_templates
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/email/templates
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+settings {
+  encodeUrl: true
+}

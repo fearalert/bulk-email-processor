@@ -176,14 +176,12 @@ export class EmailService {
     }
   }
 
-  public async debugUserInfo(userId: number) {
+  public async getAllTemplates() {
     try {
-      const debugInfo = await emailRepo.debugDataIntegrity();
-      logger.info(`Debug info requested`, `userId=${userId}`);
-      return debugInfo;
+      return await emailRepo.getAllTemplates();
     } catch (err: any) {
-      logger.error(`Failed to get debug info`, `userId=${userId}, error=${err.message || err}`);
-      throw new AppError("Failed to get debug info", 500);
+      logger.error(`Failed to get all templates`, `error=${err.message || err}`);
+      throw new AppError('Failed to fetch email templates', 500);
     }
   }
 }

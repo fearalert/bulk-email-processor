@@ -1,0 +1,26 @@
+meta {
+  name: me
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/auth/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+      "email": "dhakalrohan229@gmail.com",
+      "password": "Password@123"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

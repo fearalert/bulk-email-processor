@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import logger from '../utils/logger';
 import { registerSchema, verifySchema, loginSchema } from '../utils/validation';
+import { AuthRequest } from '../middlewares/auth.middleware';
 
 const authService = new AuthService();
 
@@ -71,25 +72,17 @@ export class AuthController {
     }
   }
 
-  public async me(req: Request, res: Response) {
+  public async me(req: AuthRequest, res: Response) {
     try {
-      const token = req.cookies['authToken'];
-      if (!token) return res.status(401).json({ error: 'Not authenticated' });
+      if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
 
-      const user = await authService.getUserFromToken(token);
-      res.json({ user });
+      res.json({ user: { id: req.user.userId, email: req.user.email } });
     } catch (err: any) {
       res.status(401).json({ error: err.message || 'Invalid token' });
     }
   }
 
   public async logout(req: Request, res: Response) {
-    res
-      .clearCookie('authToken', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-      })
-      .json({ message: 'Logged out successfully' });
+    res.json({ message: 'Logged out successfully' });
   }
 }

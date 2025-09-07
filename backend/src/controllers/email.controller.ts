@@ -229,4 +229,17 @@ export class EmailController {
       });
     }
   }
+
+  public async getTemplates(req: AuthRequest, res: Response) {
+  try {
+      if (!req.user) throw new AppError('Unauthorized', 401);
+
+      const templates = await emailService.getAllTemplates();
+      res.status(200).json({ templates });
+      } catch (err: any) {
+        logger.error(`Failed to fetch templates`, `userId=${req.user?.userId}, error=${err.message || err}`);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Failed to fetch templates' });
+      }
+    }
+
 }

@@ -1,13 +1,17 @@
 meta {
-  name: login_user
+  name: logout
   type: http
-  seq: 3
+  seq: 8
 }
 
 post {
-  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/auth/login
+  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/auth/logout
   body: json
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
 }
 
 body:json {

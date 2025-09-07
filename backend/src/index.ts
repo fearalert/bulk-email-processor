@@ -15,6 +15,7 @@ import db from './db/pgClient';
 import { startEmailWorker } from './workers/email.worker';
 import { SocketServer } from './socket/server';
 import { initSocketIO } from './socket/socket';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -56,18 +57,20 @@ app.use(
 app.use(express.json({ limit: process.env.MAX_FILE_SIZE }));
 app.use(express.urlencoded({ extended: true }));
 
+app.use(cookieParser());
+
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 app.use(morgan('combined', { stream: morganStream }));
 
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: { error: 'Too many requests' },
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
-);
+// app.use(
+//   rateLimit({
+//     windowMs: 15 * 60 * 1000,
+//     max: 100,
+//     message: { error: 'Too many requests' },
+//     standardHeaders: true,
+//     legacyHeaders: false,
+//   })
+// );
 
 app.get('/favicon.ico', (_req, res) => res.sendStatus(204));
 app.use('/auth', authRoutes);

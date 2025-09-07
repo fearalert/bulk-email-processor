@@ -23,4 +23,11 @@ router.get(
   (req, res) => emailController.getLogs(req, res)
 );
 
+router.get(
+  '/templates',
+  authMiddleware,
+  (req, res) => emailController.getTemplates(req, res)
+);
+
+
 export default router;
