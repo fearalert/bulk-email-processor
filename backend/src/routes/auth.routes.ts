@@ -6,7 +6,7 @@ const router = Router();
 const authController = AuthController.getInstance();
 
 router.post('/register',
-    // authRateLimiter,
+    authRateLimiter,
     (req, res) => authController.register(req, res)
 );
 router.get('/verify', 
