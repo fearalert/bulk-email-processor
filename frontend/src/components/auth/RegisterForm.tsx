@@ -1,13 +1,15 @@
 /** @format */
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
+import toast from 'react-hot-toast';
+import { authApi } from '../../api/api';
 
 export const RegisterForm = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,19 +19,12 @@ export const RegisterForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const sanitizeInput = (value: string) => {
-    const trimmed = value.trim();
-    const sanitized = trimmed.replace(/<[^>]*>/g, '');
-    return sanitized;
-  };
+  const sanitizeInput = (value: string) => value.trim().replace(/<[^>]*>/g, '');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
@@ -49,20 +44,19 @@ export const RegisterForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const email = sanitizeInput(formData.email);
-    const password = sanitizeInput(formData.password);
-
-    alert(
-      `Form submitted (static)\nEmail: ${email}\nPassword: ${'*'.repeat(
-        password.length
-      )}`
-    );
-
-    setFormData({ email: '', password: '', confirmPassword: '' });
+    try {
+      const email = sanitizeInput(formData.email);
+      const password = sanitizeInput(formData.password);
+      await authApi.register(email, password);
+      toast.success('Registration successful! Please login.');
+      navigate('/login');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Registration failed');
+    }
   };
 
   return (

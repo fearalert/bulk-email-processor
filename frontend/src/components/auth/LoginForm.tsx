@@ -1,57 +1,60 @@
 /** @format */
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
+import toast from 'react-hot-toast';
+import { authApi } from '../../api/api';
+import { useAuth } from '../../contexts/Authcontext';
 
 export const LoginForm = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const sanitizeInput = (value: string) => {
-    const trimmed = value.trim();
-    const sanitized = trimmed.replace(/<[^>]*>/g, '');
-    return sanitized;
-  };
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect back to the page user came from after login
+  const from = (location.state as any)?.from?.pathname || '/dashboard';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setErrors({});
 
-    // Sanitize inputs
-    const email = sanitizeInput(formData.email);
-    const password = sanitizeInput(formData.password);
+    try {
+      const response = await authApi.login(formData.email, formData.password);
 
-    const newErrors: Record<string, string> = {};
-    if (!email) newErrors.email = 'Email is required';
-    if (!password) newErrors.password = 'Password is required';
+      // Update AuthContext
+      login(response.user, response.token);
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-    } else {
-      alert(
-        `Form submitted (static)\nEmail: ${email}\nPassword: ${'*'.repeat(
-          password.length
-        )}`
-      );
-      // Reset form
-      setFormData({ email: '', password: '' });
+      toast.success('Login successful!');
+
+      // Wait a tick to ensure state updates before navigating
+      setTimeout(() => navigate(from, { replace: true }), 50);
+    } catch (error: any) {
+      if (error.response?.data?.errors) {
+        const apiErrors: Record<string, string> = {};
+        error.response.data.errors.issues?.forEach((issue: any) => {
+          apiErrors[issue.path[0]] = issue.message;
+        });
+        setErrors(apiErrors);
+      } else {
+        toast.error(error.response?.data?.error || 'Login failed');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,7 +110,8 @@ export const LoginForm = () => {
 
           <Button
             type="submit"
-            className="w-full">
+            className="w-full"
+            loading={loading}>
             Sign In
           </Button>
         </form>
@@ -126,3 +130,5 @@ export const LoginForm = () => {
     </div>
   );
 };
+
+export default LoginForm;

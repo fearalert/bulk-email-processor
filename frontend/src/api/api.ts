@@ -1,10 +1,11 @@
 import axios from 'axios';
 import type { 
-  AuthResponse, 
   RegisterResponse, 
   BulkEmailRequest, 
   BulkEmailResponse,
-  EmailLog
+  EmailLog,
+  User,
+  AuthResponse
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
@@ -42,13 +43,23 @@ export const authApi = {
     return response.data;
   },
 
-  login: async (email: string, password: string): Promise<AuthResponse> => {
+   login: async (email: string, password: string): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', { email, password });
     return response.data;
   },
 
   verify: async (token: string) => {
     const response = await api.get(`/auth/verify?token=${token}`);
+    return response.data;
+  },
+
+  me: async (): Promise<{ user: User }> => {
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
+
+  logout: async (): Promise<{ message: User }> => {
+    const response = await api.post('/auth/logout');
     return response.data;
   },
 };
@@ -75,6 +86,13 @@ export const emailApi = {
 
   getLogs: async (userId: number): Promise<EmailLog[]> => {
     const response = await api.get(`/email/logs/${userId}`);
+    return response.data;
+  },
+
+   getTemplates: async (token: string) => {
+    const response = await api.get('/email/templates', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
   },
 };
