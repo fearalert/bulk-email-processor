@@ -1,0 +1,7 @@
+script:pre-request {
+  bru.getEnvVar("access_token");
+}
+
+script:post-response {
+  bru.setEnvVar("refresh_token", res.body.token || res.body.token);bru.setEnvVar("access_token", res.body.token || res.body.newAccessToken);
+}

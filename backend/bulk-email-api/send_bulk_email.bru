@@ -1,0 +1,24 @@
+meta {
+  name: send_bulk_email
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/email/bulk
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:multipart-form {
+  file: @file(/mnt/sda2/bulk-email-processor/test-emails.csv)
+  templateId: 1 @contentType(Test)
+}
+
+settings {
+  encodeUrl: true
+}

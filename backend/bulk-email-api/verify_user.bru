@@ -1,0 +1,26 @@
+meta {
+  name: verify_user
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/auth/verify?token={{access_token}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+      "email": "dhakalrohan229@gmail.com",
+      "password": "Password@123"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

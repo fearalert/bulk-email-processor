@@ -1,0 +1,22 @@
+meta {
+  name: register_user
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "email": "dhakalrohanrd@gmail.com",
+      "password": "Password@123"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

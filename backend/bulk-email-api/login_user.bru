@@ -1,0 +1,26 @@
+meta {
+  name: login_user
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{PROTOCOL}}://{{BASE_URL}}:{{PORT}}/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "email": "dhakalrohan229@gmail.com",
+      "password": "Password@123"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("access_token", res.body.token || res.body.token);
+}
+
+settings {
+  encodeUrl: true
+}
