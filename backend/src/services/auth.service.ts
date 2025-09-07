@@ -63,4 +63,17 @@ export class AuthService {
       throw err instanceof AppError ? err : new AppError('Login failed', 500);
     }
   }
+
+  async getUserFromToken(token: string) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number };
+      const user = await userRepo.findById(decoded.userId);
+      if (!user) throw new AppError('User not found', 404);
+
+      return { id: user.id, email: user.email };
+    } catch (err: any) {
+      logger.error(`Get user from token failed: ${err.message || err}`);
+      throw new AppError('Invalid or expired token', 400);
+    }
+  }
 }

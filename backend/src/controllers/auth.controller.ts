@@ -70,4 +70,26 @@ export class AuthController {
       res.status(401).json({ error: err.message || 'Login failed' });
     }
   }
+
+  public async me(req: Request, res: Response) {
+    try {
+      const token = req.cookies['authToken'];
+      if (!token) return res.status(401).json({ error: 'Not authenticated' });
+
+      const user = await authService.getUserFromToken(token);
+      res.json({ user });
+    } catch (err: any) {
+      res.status(401).json({ error: err.message || 'Invalid token' });
+    }
+  }
+
+  public async logout(req: Request, res: Response) {
+    res
+      .clearCookie('authToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      })
+      .json({ message: 'Logged out successfully' });
+  }
 }

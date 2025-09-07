@@ -54,4 +54,10 @@ export class UserRepository {
       throw new AppError('Error verifying user', 500);
     }
   }
+
+  async findById(id: number) {
+    const result = await db.query('SELECT id, email FROM users WHERE id = $1', [id]);
+    return result.rows[0] || null;
+  }
+
 }
