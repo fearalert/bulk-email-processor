@@ -5,7 +5,6 @@ import { hashPassword, comparePassword } from '../utils/hash';
 import logger from '../utils/logger';
 import { sendMail } from '../utils/mailer';
 import { getVerificationEmailTemplate } from '../utils/emailTemplate';
-import e from 'cors';
 
 const userRepo = new UserRepository();
 
@@ -55,7 +54,7 @@ export class AuthService {
       if (!isValid) throw new AppError('Invalid email or password', 401);
       if (!user.verified) throw new AppError('Email not verified', 403);
 
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: Number(process.env.JWT_EXPIRES_IN) || '1d' });
       logger.info(`User logged in: ${email}`);
       
       return { user: { id: user.id, email: user.email }, token };
