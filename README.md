@@ -2,7 +2,7 @@
 
 # Bulk Email Processor (Start Guide)
 
-Quick start guide to run the project with Docker or locally without Docker.
+Quick start guide to run the project with Docker or locally without Docker for the application.
 
 ---
 
