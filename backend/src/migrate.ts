@@ -5,7 +5,7 @@ import logger from './utils/logger';
 
 async function runMigrations() {
   try {
-    const migrationsDir = path.join(__dirname, '../migrations');
+    const migrationsDir = path.join(process.cwd(), 'migrations');
     const files = fs.readdirSync(migrationsDir).sort();
 
     for (const file of files) {

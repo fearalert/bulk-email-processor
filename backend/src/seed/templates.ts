@@ -1,5 +1,7 @@
-import db from "../src/db/pgClient";
-import logger from "../src/utils/logger";
+import path from "path";
+import fs from "fs";
+import db from "../db/pgClient";
+import logger from "../utils/logger";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -22,8 +24,8 @@ const emailTemplates = [
   }
 ];
 
-(async () => {
-  try {
+async function seedTemplates() {
+    try {
     for (const template of emailTemplates) {
       const existing = await db.query(
         "SELECT id FROM email_templates WHERE name=$1",
@@ -45,4 +47,7 @@ const emailTemplates = [
     logger.error(`Template seeding failed`, `error=${err.message || err}`);
     process.exit(1);
   }
-})();
+}
+
+
+seedTemplates();

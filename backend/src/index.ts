@@ -121,3 +121,5 @@ httpServer.listen(PORT, async () => {
     logger.error(`DB connection failed: ${err}`);
   }
 });
+
+export default app;
