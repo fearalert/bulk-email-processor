@@ -1,5 +1,8 @@
 import db from "../src/db/pgClient";
 import logger from "../src/utils/logger";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const emailTemplates = [
   {
