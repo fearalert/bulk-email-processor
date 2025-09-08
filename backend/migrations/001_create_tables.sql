@@ -25,5 +25,5 @@ CREATE TABLE IF NOT EXISTS email_logs (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE INDEX idx_email_logs_user_id ON email_logs(user_id);
-CREATE INDEX idx_email_logs_status ON email_logs(status);
+CREATE INDEX IF NOT EXISTS idx_email_logs_user_id ON email_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_email_logs_status ON email_logs(status);
