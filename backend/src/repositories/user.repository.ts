@@ -60,4 +60,16 @@ export class UserRepository {
     return result.rows[0] || null;
   }
 
+  async updatePassword(email: string, passwordHash: string) {
+    try {
+      const result = await db.query(
+        'UPDATE users SET password_hash = $1 WHERE email = $2 RETURNING id, email',
+        [passwordHash, email]
+      );
+      return result.rows[0] || null;
+    } catch (error: any) {
+      logger.error(`Error updating password`, `email=${email}, error=${error.message || error}`);
+      throw new AppError('Error updating password', 500);
+    }
+  }
 }

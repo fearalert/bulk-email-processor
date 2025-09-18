@@ -1,45 +1,30 @@
 /** @format */
-
-import React, { useState, useEffect } from 'react';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, Eye, EyeOff, Key } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import toast from 'react-hot-toast';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/api';
 
-export const ResetPasswordForm = () => {
-  const location = useLocation();
+const ResetPassword = () => {
   const navigate = useNavigate();
-
+  const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState('');
-
-  // Extract token from URL query params
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const t = params.get('token');
-    if (!t) {
-      toast.error('Invalid or missing token');
-      navigate('/login');
-    } else {
-      setToken(t);
-    }
-  }, [location.search, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await authApi.resetPassword(token, newPassword);
-      toast.success('Password reset successful! You can now log in.');
+      toast.success('Password reset successful! You can now login.');
       navigate('/login');
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Password reset failed');
+      toast.error(err.response?.data?.error || 'Failed to reset password');
     } finally {
       setLoading(false);
     }
@@ -48,14 +33,24 @@ export const ResetPasswordForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Reset Your Password
+          </h2>
           <p className="text-gray-600 mt-2">Enter a new password to continue</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className="space-y-6">
+          <Input
+            label="Reset Token"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            placeholder="Enter the 12-digit token from your email"
+            icon={<Key className="h-5 w-5 text-gray-400" />}
+            required
+          />
           <div className="relative">
             <Input
               label="New Password"
@@ -63,8 +58,8 @@ export const ResetPasswordForm = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password"
-              required
               icon={<Lock className="h-5 w-5 text-gray-400" />}
+              required
             />
             <button
               type="button"
@@ -78,6 +73,16 @@ export const ResetPasswordForm = () => {
             </button>
           </div>
 
+          <Input
+            label="Confirm Password"
+            type={showPassword ? 'text' : 'password'}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm new password"
+            icon={<Lock className="h-5 w-5 text-gray-400" />}
+            required
+          />
+
           <Button
             type="submit"
             className="w-full"
@@ -90,4 +95,4 @@ export const ResetPasswordForm = () => {
   );
 };
 
-export default ResetPasswordForm;
+export default ResetPassword;

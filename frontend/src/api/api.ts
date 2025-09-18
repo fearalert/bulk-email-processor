@@ -58,7 +58,7 @@ export const authApi = {
     return response.data;
   },
 
-  logout: async (): Promise<{ message: User }> => {
+  logout: async (): Promise<{ message: string }> => {
     const response = await api.post('/auth/logout');
     return response.data;
   },
@@ -68,8 +68,9 @@ export const authApi = {
     return response.data;
   },
 
-  resetPassword: async (token: string, password: string) => {
-    const response = await api.post('/auth/reset-password', { token, password });
+  resetPassword: async (token: string, newPassword: string) => {
+    // Send token in body instead of query params
+    const response = await api.post('/auth/reset-password', { token, newPassword });
     return response.data;
   },
 

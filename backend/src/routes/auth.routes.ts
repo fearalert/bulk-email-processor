@@ -7,7 +7,7 @@ const router = Router();
 const authController = AuthController.getInstance();
 
 router.post('/register',
-    authRateLimiter,
+    // authRateLimiter,
     (req, res) => authController.register(req, res)
 );
 router.get('/verify', 
@@ -16,7 +16,7 @@ router.get('/verify',
 );
 
 router.post('/login', 
-    authRateLimiter,
+    // authRateLimiter,
     (req, res) => authController.login(req, res)
 );
 
@@ -29,5 +29,18 @@ router.post('/logout',
     authMiddleware,
     (req, res) => authController.logout(req, res)
 );
+
+router.post('/forgot-password', 
+  (req, res) => authController.forgotPassword(req, res)
+);
+
+router.post('/reset-password', 
+  (req, res) => authController.resetPassword(req, res)
+);
+
+router.post('/refresh-token', 
+  (req, res) => authController.refreshToken(req, res)
+);
+
 
 export default router;

@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import logger from '../utils/logger';
 import { registerSchema, verifySchema, loginSchema } from '../utils/validation';
@@ -8,9 +8,9 @@ const authService = new AuthService();
 
 export class AuthController {
   private static instance: AuthController;
-  
+
   private constructor() {}
-  
+
   public static getInstance(): AuthController {
     if (!AuthController.instance) {
       AuthController.instance = new AuthController();
@@ -25,9 +25,10 @@ export class AuthController {
         logger.warn(`Register validation failed: ${JSON.stringify(parseResult.error)}`);
         return res.status(400).json({ errors: parseResult.error });
       }
-      
+
       const { email, password } = parseResult.data;
       const user = await authService.register(email, password);
+
       logger.info(`Registration successful for ${email}`);
       res.status(201).json({ message: 'Verification email sent', user });
     } catch (err: any) {
@@ -43,9 +44,10 @@ export class AuthController {
         logger.warn(`Email verification validation failed: ${JSON.stringify(parseResult.error)}`);
         return res.status(400).json({ errors: parseResult.error });
       }
-      
+
       const { token } = parseResult.data;
       const user = await authService.verifyEmail(token);
+
       logger.info(`Email verified for ${user.email}`);
       res.json({ message: 'Email verified', user });
     } catch (err: any) {
@@ -61,9 +63,10 @@ export class AuthController {
         logger.warn(`Login validation failed: ${JSON.stringify(parseResult.error)}`);
         return res.status(400).json({ errors: parseResult.error });
       }
-      
+
       const { email, password } = parseResult.data;
       const data = await authService.login(email, password);
+
       logger.info(`User logged in: ${email}`);
       res.json(data);
     } catch (err: any) {
@@ -84,5 +87,46 @@ export class AuthController {
 
   public async logout(req: Request, res: Response) {
     res.json({ message: 'Logged out successfully' });
+  }
+
+  public async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: 'Email is required' });
+
+      const result = await authService.forgotPassword(email);
+      res.json(result);
+    } catch (err: any) {
+      logger.error(`Forgot password failed: ${err.message || err}`);
+      res.status(400).json({ error: err.message || 'Request failed' });
+    }
+  }
+
+  public async resetPassword(req: Request, res: Response) {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    const result = await authService.resetPassword(token, newPassword);
+    res.json(result);
+  } catch (err: any) {
+    logger.error(`Reset password failed: ${err.message || err}`);
+    res.status(400).json({ error: err.message || 'Reset failed' });
+  }
+}
+
+  public async refreshToken(req: Request, res: Response) {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken) return res.status(400).json({ error: 'Refresh token is required' });
+
+      const tokens = await authService.refreshToken(refreshToken);
+      res.json(tokens);
+    } catch (err: any) {
+      logger.error(`Refresh token error: ${err.message || err}`);
+      res.status(401).json({ error: err.message || 'Invalid refresh token' });
+    }
   }
 }
