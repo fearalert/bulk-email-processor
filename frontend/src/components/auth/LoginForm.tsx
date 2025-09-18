@@ -1,4 +1,5 @@
 /** @format */
+
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
@@ -15,11 +16,9 @@ export const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { login } = useAuth();
+  const authContext = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Redirect back to the page user came from after login
   const from = (location.state as any)?.from?.pathname || '/dashboard';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,12 +35,9 @@ export const LoginForm = () => {
     try {
       const response = await authApi.login(formData.email, formData.password);
 
-      // Update AuthContext
-      login(response.user, response.token);
+      authContext.login(response.user, response.token);
 
       toast.success('Login successful!');
-
-      // Wait a tick to ensure state updates before navigating
       setTimeout(() => navigate(from, { replace: true }), 50);
     } catch (error: any) {
       if (error.response?.data?.errors) {
@@ -106,6 +102,15 @@ export const LoginForm = () => {
                 <Eye className="h-5 w-5" />
               )}
             </button>
+          </div>
+
+          {/* Forgot Password Link */}
+          <div className="flex justify-end mb-4">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-600 hover:text-blue-500 font-medium">
+              Forgot Password?
+            </Link>
           </div>
 
           <Button

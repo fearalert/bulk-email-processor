@@ -53,7 +53,7 @@ export const RegisterForm = () => {
       const password = sanitizeInput(formData.password);
       await authApi.register(email, password);
       toast.success('Registration successful! Please login.');
-      navigate('/login');
+      navigate('/verify');
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Registration failed');
     }

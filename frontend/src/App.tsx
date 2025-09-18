@@ -16,6 +16,8 @@ import { AuthProvider } from './contexts/Authcontext';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
 import Profile from './pages/Profile/Profile';
 import LogsPage from './pages/Logs/EmailLogs';
+import ForgotPassword from './pages/Auth/ForgotPassword';
+import ResetPassword from './pages/Auth/ResetPassword';
 
 function App() {
   return (
@@ -34,10 +36,6 @@ function App() {
             <Route
               path="/register"
               element={<Register />}
-            />
-            <Route
-              path="/verify-email"
-              element={<EmailVerification />}
             />
             <Route
               path="/verify"
@@ -77,6 +75,15 @@ function App() {
               }
             />
           </Routes>
+
+          <Route
+            path="/forgot-password"
+            element={<ForgotPassword />}
+          />
+          <Route
+            path="/reset-password"
+            element={<ResetPassword />}
+          />
 
           <Toaster
             position="top-right"

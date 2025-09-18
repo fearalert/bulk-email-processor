@@ -43,7 +43,7 @@ export const authApi = {
     return response.data;
   },
 
-   login: async (email: string, password: string): Promise<AuthResponse> => {
+  login: async (email: string, password: string): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', { email, password });
     return response.data;
   },
@@ -60,6 +60,21 @@ export const authApi = {
 
   logout: async (): Promise<{ message: User }> => {
     const response = await api.post('/auth/logout');
+    return response.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, password: string) => {
+    const response = await api.post('/auth/reset-password', { token, password });
+    return response.data;
+  },
+
+  refreshToken: async (refreshToken: string) => {
+    const response = await api.post('/auth/refresh-token', { refreshToken });
     return response.data;
   },
 };
@@ -89,7 +104,7 @@ export const emailApi = {
     return response.data;
   },
 
-   getTemplates: async (token: string) => {
+  getTemplates: async (token: string) => {
     const response = await api.get('/email/templates', {
       headers: { Authorization: `Bearer ${token}` },
     });
