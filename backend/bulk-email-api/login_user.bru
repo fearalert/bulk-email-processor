@@ -12,13 +12,13 @@ post {
 
 body:json {
   {
-      "email": "dhakalrohanrd@gmail.com",
+      "email": "yuriranjit@gmail.com",
       "password": "Password@123"
   }
 }
 
 script:post-response {
-  bru.setEnvVar("access_token", res.body.token || res.body.token);
+  bru.setEnvVar("refresh_token", res.body.refreshToken || res.body.newRefreshToken);bru.setEnvVar("access_token", res.body.accessToken || res.body.newAccessToken);
 }
 
 settings {

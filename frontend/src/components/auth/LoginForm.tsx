@@ -1,5 +1,4 @@
 /** @format */
-
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
@@ -7,7 +6,6 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import toast from 'react-hot-toast';
-import { authApi } from '../../api/api';
 import { useAuth } from '../../contexts/Authcontext';
 
 export const LoginForm = () => {
@@ -16,10 +14,12 @@ export const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const authContext = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || '/dashboard';
+
+  const sanitizeInput = (value: string) => value.trim().replace(/<[^>]*>/g, '');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,12 +33,13 @@ export const LoginForm = () => {
     setErrors({});
 
     try {
-      const response = await authApi.login(formData.email, formData.password);
+      const email = sanitizeInput(formData.email);
+      const password = sanitizeInput(formData.password);
 
-      authContext.login(response.user, response.token);
+      await login(email, password);
 
       toast.success('Login successful!');
-      setTimeout(() => navigate(from, { replace: true }), 50);
+      navigate(from, { replace: true });
     } catch (error: any) {
       if (error.response?.data?.errors) {
         const apiErrors: Record<string, string> = {};

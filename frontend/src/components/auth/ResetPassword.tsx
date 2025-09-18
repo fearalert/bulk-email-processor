@@ -6,21 +6,47 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import toast from 'react-hot-toast';
-import { authApi } from '../../api/api';
+import { useAuth } from '../../contexts/Authcontext';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const { resetPassword } = useAuth();
+
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const sanitizeInput = (value: string) => value.trim().replace(/<[^>]*>/g, '');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const cleanToken = sanitizeInput(token);
+    const cleanPassword = sanitizeInput(newPassword);
+    const cleanConfirm = sanitizeInput(confirmPassword);
+
+    if (!cleanToken) {
+      toast.error('Reset token is required');
+      return;
+    }
+    if (!cleanPassword) {
+      toast.error('Password is required');
+      return;
+    }
+    if (cleanPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    if (cleanPassword !== cleanConfirm) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
-      await authApi.resetPassword(token, newPassword);
+      await resetPassword(cleanToken, cleanPassword);
       toast.success('Password reset successful! You can now login.');
       navigate('/login');
     } catch (err: any) {
@@ -47,7 +73,7 @@ const ResetPassword = () => {
             label="Reset Token"
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            placeholder="Enter the 12-digit token from your email"
+            placeholder="Enter the token from your email"
             icon={<Key className="h-5 w-5 text-gray-400" />}
             required
           />

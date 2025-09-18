@@ -6,17 +6,21 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import toast from 'react-hot-toast';
-import { authApi } from '../../api/api';
+import { useAuth } from '../../contexts/Authcontext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { forgotPassword } = useAuth();
+
+  const sanitizeInput = (value: string) => value.trim().replace(/<[^>]*>/g, '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email) {
+    const cleanEmail = sanitizeInput(email);
+    if (!cleanEmail) {
       toast.error('Please enter your email address');
       return;
     }
@@ -24,10 +28,8 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      await authApi.forgotPassword(email);
-      toast.success(
-        'If this email exists, a password reset link has been sent.'
-      );
+      await forgotPassword(cleanEmail);
+      toast.success('If this email exists, a reset link has been sent.');
       navigate('/reset-password');
     } catch (err: any) {
       toast.error(

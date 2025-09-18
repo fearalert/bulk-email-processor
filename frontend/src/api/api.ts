@@ -17,22 +17,46 @@ const api = axios.create({
   },
 });
 
+// Attach access token on each request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const accessToken = localStorage.getItem('accessToken');
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
 });
 
+// Refresh token if 401 Unauthorized
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) throw new Error('No refresh token available');
+
+        // Call refresh endpoint
+        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+          refreshToken,
+        });
+
+        const newAccessToken = data.accessToken;
+        localStorage.setItem('accessToken', newAccessToken);
+
+        // Retry original request with new token
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.error('Token refresh failed, logging out');
+        localStorage.clear();
+        window.location.href = '/login';
+      }
     }
+
     return Promise.reject(error);
   }
 );
@@ -69,8 +93,7 @@ export const authApi = {
   },
 
   resetPassword: async (token: string, newPassword: string) => {
-    // Send token in body instead of query params
-    const response = await api.post('/auth/reset-password', { token, newPassword });
+    const response = await api.post(`/auth/reset-password?token=${token}`, { newPassword });
     return response.data;
   },
 
@@ -83,10 +106,10 @@ export const authApi = {
 export const emailApi = {
   sendBulkEmails: async (data: BulkEmailRequest): Promise<BulkEmailResponse> => {
     const formData = new FormData();
-    
+
     const csvContent = data.emails.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
-    
+
     formData.append('file', blob, 'emails.csv');
     formData.append('templateId', data.templateId.toString());
     formData.append('subject', data.subject);

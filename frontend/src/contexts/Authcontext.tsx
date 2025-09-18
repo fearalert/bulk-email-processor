@@ -6,15 +6,18 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
+import { authApi } from '../api/api';
 import type { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
-  login: (user: User, token: string) => void;
-  logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,50 +32,71 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Initialize from localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error('Failed to parse user from localStorage', err);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-      }
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    (async () => {
+      try {
+        const response = await authApi.me();
+        setUser(response.user);
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Failed to restore session:', err);
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  // Login function
-  const login = useCallback((userData: User, authToken: string) => {
-    setUser(userData);
-    setToken(authToken);
-    localStorage.setItem('authToken', authToken);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const login = useCallback(async (email: string, password: string) => {
+    const response = await authApi.login(email, password);
+    localStorage.setItem('accessToken', response.token);
+    if (response.refreshToken) {
+      localStorage.setItem('refreshToken', response.refreshToken);
+    }
+    setUser(response.user);
+    setIsAuthenticated(true);
   }, []);
 
-  // Logout function
+  const register = useCallback(async (email: string, password: string) => {
+    await authApi.register(email, password);
+  }, []);
+
+  const forgotPassword = useCallback(async (email: string) => {
+    await authApi.forgotPassword(email);
+  }, []);
+
+  const resetPassword = useCallback(
+    async (token: string, newPassword: string) => {
+      await authApi.resetPassword(token, newPassword);
+    },
+    []
+  );
+
   const logout = useCallback(() => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     setUser(null);
-    setToken(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    setIsAuthenticated(false);
   }, []);
 
   const value: AuthContextType = {
     user,
-    token,
-    login,
-    logout,
-    isAuthenticated: !!user && !!token,
+    isAuthenticated,
     loading,
+    login,
+    register,
+    forgotPassword,
+    resetPassword,
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

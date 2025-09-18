@@ -6,10 +6,12 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import toast from 'react-hot-toast';
-import { authApi } from '../../api/api';
+import { useAuth } from '../../contexts/Authcontext';
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -51,8 +53,12 @@ export const RegisterForm = () => {
     try {
       const email = sanitizeInput(formData.email);
       const password = sanitizeInput(formData.password);
-      await authApi.register(email, password);
-      toast.success('Registration successful! Please login.');
+
+      await register(email, password);
+
+      toast.success(
+        'Registration successful! Please check your email to verify.'
+      );
       navigate('/verify');
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Registration failed');
